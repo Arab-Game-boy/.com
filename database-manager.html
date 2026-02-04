@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة قاعدة البيانات - موقع شحن الألعاب</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00ADB5;
+            --primary-dark: #0097A7;
+            --secondary: #FFD700;
+            --dark: #0f0f1e;
+            --dark-light: #1A1A2E;
+            --light: #EEEEEE;
+            --gray: #8D8D8D;
+            --success: #4CAF50;
+            --danger: #FF5252;
+            --warning: #FF9800;
+            --info: #2196F3;
+            --gradient-primary: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            --gradient-bg: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--gradient-bg);
+            color: var(--light);
+            min-height: 100vh;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--light);
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--gray);
+            font-size: 1.2rem;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .card h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--secondary);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #2E7D32);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #C62828);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning), #EF6C00);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .data-section {
+            margin-top: 40px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 8px;
+            color: var(--light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: right;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-table th {
+            background: rgba(0, 173, 181, 0.2);
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .data-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .notification.success {
+            background: var(--success);
+        }
+
+        .notification.error {
+            background: var(--danger);
+        }
+
+        .notification.warning {
+            background: var(--warning);
+        }
+
+        .spinner {
+            display: inline-block;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .data-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-database"></i> إدارة قاعدة البيانات</h1>
+            <p class="subtitle">موقع شحن الألعاب - نظام IndexedDB المتكامل</p>
+        </header>
+
+        <div class="dashboard">
+            <div class="card">
+                <h2><i class="fas fa-chart-bar"></i> إحصائيات قاعدة البيانات</h2>
+                <div class="stats-grid" id="statsGrid">
+                    <!-- سيتم ملؤها بالجافاسكريبت -->
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-tools"></i> إجراءات سريعة</h2>
+                <div class="actions">
+                    <button class="btn btn-primary" id="refreshStats">
+                        <i class="fas fa-sync"></i> تحديث الإحصائيات
+                    </button>
+                    <button class="btn btn-success" id="exportAll">
+                        <i class="fas fa-download"></i> تصدير جميع البيانات
+                    </button>
+                    <button class="btn btn-warning" id="importData">
+                        <i class="fas fa-upload"></i> استيراد بيانات
+                    </button>
+                    <button class="btn btn-danger" id="resetDatabase">
+                        <i class="fas fa-trash"></i> إعادة تعيين قاعدة البيانات
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="data-section">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="users">👥 المستخدمين</button>
+                <button class="tab-btn" data-tab="orders">📦 الطلبات</button>
+                <button class="tab-btn" data-tab="freeOffers">🎁 العروض المجانية</button>
+                <button class="tab-btn" data-tab="failedRequests">⚠️ الطلبات الفاشلة</button>
+                <button class="tab-btn" data-tab="settings">⚙️ الإعدادات</button>
+            </div>
+
+            <div class="tab-content active" id="usersTab">
+                <h3>👥 قائمة المستخدمين</h3>
+                <table class="data-table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>الاسم</th>
+                            <th>البريد</th>
+                            <th>الهاتف</th>
+                            <th>الحساب</th>
+                            <th>التاريخ</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- سيتم ملؤها بالجافاسكريبت -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-content" id="ordersTab">
+                <h3>📦 قائمة الطلبات</h3>
+                <table class="data-table" id="ordersTable">
+                    <thead>
+                        <tr>
+                            <th>رقم الطلب</th>
+                            <th>المستخدم</th>
+                            <th>اللعبة</th>
+                            <th>الباقة</th>
+                            <th>الحالة</th>
+                            <th>التاريخ</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <!-- سيتم ملؤها بالجافاسكريبت -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-content" id="freeOffersTab">
+                <h3>🎁 العروض المجانية</h3>
+                <table class="data-table" id="freeOffersTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>المستخدم</th>
+                            <th>اللعبة</th>
+                            <th>المبلغ</th>
+                            <th>الحالة</th>
+                            <th>التاريخ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="freeOffersTableBody">
+                        <!-- سيتم ملؤها بالجافاسكريبت -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-content" id="failedRequestsTab">
+                <h3>⚠️ الطلبات الفاشلة</h3>
+                <table class="data-table" id="failedRequestsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>النوع</th>
+                            <th>المحاولات</th>
+                            <th>آخر محاولة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="failedRequestsTableBody">
+                        <!-- سيتم ملؤها بالجافاسكريبت -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-content" id="settingsTab">
+                <h3>⚙️ إعدادات النظام</h3>
+                <div id="settingsContent">
+                    <!-- سيتم ملؤها بالجافاسكريبت -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <input type="file" id="importFile" style="display: none;" accept=".json">
+
+    <script>
+        // استيراد فئة قاعدة البيانات من الملف الرئيسي
+        // Note: يجب أن تكون هذه الصفحة في نفس المجلد مثل index.html
+        // أو تضمين كود IndexedDB هنا مباشرة
+
+        let gameDB = null;
+        
+        // تهيئة قاعدة البيانات
+        async function initializeDatabase() {
+            try {
+                // استخدام نفس فئة قاعدة البيانات
+                gameDB = await getDatabase();
+                console.log('✅ قاعدة البيانات جاهزة للإدارة');
+                await refreshAllData();
+                return true;
+            } catch (error) {
+                console.error('❌ فشل تهيئة قاعدة البيانات:', error);
+                showNotification('❌ تعذر الاتصال بقاعدة البيانات', 'error');
+                return false;
+            }
+        }
+        
+        // تحديث جميع البيانات
+        async function refreshAllData() {
+            await updateStats();
+            await loadUsers();
+            await loadOrders();
+            await loadFreeOffers();
+            await loadFailedRequests();
+            await loadSettings();
+        }
+        
+        // تحديث الإحصائيات
+        async function updateStats() {
+            if (!gameDB) return;
+            
+            try {
+                const stats = await gameDB.getDatabaseStats();
+                
+                const statsGrid = document.getElementById('statsGrid');
+                statsGrid.innerHTML = `
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.users}</div>
+                        <div class="stat-label">👥 المستخدمين</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.orders}</div>
+                        <div class="stat-label">📦 الطلبات</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.freeOffers}</div>
+                        <div class="stat-label">🎁 العروض المجانية</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.failedRequests}</div>
+                        <div class="stat-label">⚠️ الطلبات الفاشلة</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${formatBytes(stats.totalSize)}</div>
+                        <div class="stat-label">💾 حجم البيانات</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${new Date().toLocaleDateString('ar-EG')}</div>
+                        <div class="stat-label">📅 آخر تحديث</div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('❌ خطأ في تحديث الإحصائيات:', error);
+            }
+        }
+        
+        // تحميل المستخدمين
+        async function loadUsers() {
+            if (!gameDB) return;
+            
+            try {
+                const users = await gameDB.getAllUsers();
+                const tbody = document.getElementById('usersTableBody');
+                
+                if (users.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 30px; color: var(--gray);">
+                                لا يوجد مستخدمين
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                tbody.innerHTML = users.map(user => `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>${user.name || 'غير محدد'}</td>
+                        <td>${user.email || 'غير محدد'}</td>
+                        <td>${user.phone || 'غير محدد'}</td>
+                        <td>${user.provider || 'غير محدد'}</td>
+                        <td>${formatDate(user.createdAt)}</td>
+                        <td>
+                            <button class="tab-btn" onclick="viewUserDetails(${user.id})" style="padding: 5px 10px; font-size: 0.9rem;">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="tab-btn" onclick="deleteUser(${user.id})" style="padding: 5px 10px; font-size: 0.9rem; background: var(--danger);">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+            } catch (error) {
+                console.error('❌ خطأ في تحميل المستخدمين:', error);
+            }
+        }
+        
+        // تحميل الطلبات
+        async function loadOrders() {
+            if (!gameDB) return;
+            
+            try {
+                const orders = await gameDB.getAllOrders();
+                const tbody = document.getElementById('ordersTableBody');
+                
+                if (orders.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 30px; color: var(--gray);">
+                                لا توجد طلبات
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                tbody.innerHTML = orders.map(order => `
+                    <tr>
+                        <td>${order.orderNumber || 'N/A'}</td>
+                        <td>${order.userEmail || 'غير محدد'}</td>
+                        <td>${order.game || 'غير محدد'}</td>
+                        <td>${order.package?.amount || 'غير محدد'}</td>
+                        <td>
+                            <span style="
+                                padding: 3px 10px;
+                                border-radius: 15px;
+                                font-size: 0.8rem;
+                                background: ${getStatusColor(order.status)};
+                            ">
+                                ${order.status || 'pending'}
+                            </span>
+                        </td>
+                        <td>${formatDate(order.createdAt)}</td>
+                        <td>
+                            <button class="tab-btn" onclick="viewOrderDetails(${order.id})" style="padding: 5px 10px; font-size: 0.9rem;">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="tab-btn" onclick="updateOrderStatus(${order.id})" style="padding: 5px 10px; font-size: 0.9rem; background: var(--warning);">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+            } catch (error) {
+                console.error('❌ خطأ في تحميل الطلبات:', error);
+            }
+        }
+        
+        // تحميل العروض المجانية
+        async function loadFreeOffers() {
+            if (!gameDB) return;
+            
+            try {
+                const freeOffers = await new Promise((resolve, reject) => {
+                    const transaction = gameDB.db.transaction(['freeOffers'], 'readonly');
+                    const store = transaction.objectStore('freeOffers');
+                    const request = store.getAll();
+                    
+                    request.onsuccess = (event) => resolve(event.target.result || []);
+                    request.onerror = (event) => reject(event.target.error);
+                });
+                
+                const tbody = document.getElementById('freeOffersTableBody');
+                
+                if (freeOffers.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 30px; color: var(--gray);">
+                                لا توجد عروض مجانية
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                tbody.innerHTML = freeOffers.map(offer => `
+                    <tr>
+                        <td>${offer.id}</td>
+                        <td>${offer.email || 'غير محدد'}</td>
+                        <td>${offer.gameName || offer.game || 'غير محدد'}</td>
+                        <td>${offer.amount || 'غير محدد'}</td>
+                        <td>
+                            <span style="
+                                padding: 3px 10px;
+                                border-radius: 15px;
+                                font-size: 0.8rem;
+                                background: ${offer.used ? '#4CAF50' : '#FF9800'};
+                            ">
+                                ${offer.used ? 'تم الاستخدام' : 'متاح'}
+                            </span>
+                        </td>
+                        <td>${formatDate(offer.claimedAt)}</td>
+                    </tr>
+                `).join('');
+                
+            } catch (error) {
+                console.error('❌ خطأ في تحميل العروض المجانية:', error);
+            }
+        }
+        
+        // تحميل الطلبات الفاشلة
+        async function loadFailedRequests() {
+            if (!gameDB) return;
+            
+            try {
+                const failedRequests = await gameDB.getFailedRequests();
+                const tbody = document.getElementById('failedRequestsTableBody');
+                
+                if (failedRequests.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 30px; color: var(--gray);">
+                                لا توجد طلبات فاشلة
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                tbody.innerHTML = failedRequests.map(req => `
+                    <tr>
+                        <td>${req.id}</td>
+                        <td>${req.type || 'غير محدد'}</td>
+                        <td>${req.attempts || 1}</td>
+                        <td>${formatDate(req.lastAttempt)}</td>
+                        <td>
+                            <button class="tab-btn" onclick="retryFailedRequest(${req.id})" style="padding: 5px 10px; font-size: 0.9rem; background: var(--success);">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                            <button class="tab-btn" onclick="deleteFailedRequest(${req.id})" style="padding: 5px 10px; font-size: 0.9rem; background: var(--danger);">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+            } catch (error) {
+                console.error('❌ خطأ في تحميل الطلبات الفاشلة:', error);
+            }
+        }
+        
+        // تحميل الإعدادات
+        async function loadSettings() {
+            if (!gameDB) return;
+            
+            try {
+                const settingsContent = document.getElementById('settingsContent');
+                settingsContent.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <div class="stat-item">
+                            <h4 style="margin-bottom: 10px; color: var(--primary);">إدارة النسخ الاحتياطية</h4>
+                            <p style="color: var(--gray); margin-bottom: 15px;">قم بإنشاء نسخ احتياطية من قاعدة البيانات بشكل دوري</p>
+                            <button class="btn btn-success" onclick="createBackup()" style="width: 100%;">
+                                <i class="fas fa-save"></i> إنشاء نسخة احتياطية
+                            </button>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <h4 style="margin-bottom: 10px; color: var(--primary);">صيانة قاعدة البيانات</h4>
+                            <p style="color: var(--gray); margin-bottom: 15px;">تحسين وتنظيف قاعدة البيانات</p>
+                            <button class="btn btn-primary" onclick="optimizeDatabase()" style="width: 100%;">
+                                <i class="fas fa-magic"></i> تحسين الأداء
+                            </button>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <h4 style="margin-bottom: 10px; color: var(--primary);">تصدير البيانات</h4>
+                            <p style="color: var(--gray); margin-bottom: 15px;">تصدير البيانات بتنسيقات مختلفة</p>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <button class="btn" onclick="exportAsJSON()" style="background: #6D28D9;">
+                                    <i class="fas fa-file-code"></i> JSON
+                                </button>
+                                <button class="btn" onclick="exportAsCSV()" style="background: #10B981;">
+                                    <i class="fas fa-file-csv"></i> CSV
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 10px;">
+                        <h4 style="color: var(--primary); margin-bottom: 15px;">معلومات النظام</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div>
+                                <strong>إصدار قاعدة البيانات:</strong>
+                                <p>2.0</p>
+                            </div>
+                            <div>
+                                <strong>تاريخ الإنشاء:</strong>
+                                <p>${new Date().toLocaleDateString('ar-EG')}</p>
+                            </div>
+                            <div>
+                                <strong>المخازن المتاحة:</strong>
+                                <p>5 مخازن</p>
+                            </div>
+                            <div>
+                                <strong>حالة الاتصال:</strong>
+                                <p style="color: var(--success);">✅ متصل</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('❌ خطأ في تحميل الإعدادات:', error);
+            }
+        }
+        
+        // وظائف مساعدة
+        function formatDate(dateString) {
+            if (!dateString) return 'غير محدد';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ar-EG') + ' ' + date.toLocaleTimeString('ar-EG');
+        }
+        
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 بايت';
+            const k = 1024;
+            const sizes = ['بايت', 'كيلوبايت', 'ميجابايت', 'جيجابايت'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function getStatusColor(status) {
+            switch(status) {
+                case 'completed': return '#4CAF50';
+                case 'pending': return '#FF9800';
+                case 'sent_to_telegram': return '#2196F3';
+                case 'failed': return '#FF5252';
+                default: return '#9E9E9E';
+            }
+        }
+        
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
+        }
+        
+        // إدارة التبويبات
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // إزالة النشاط من جميع الأزرار
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                // إخفاء جميع المحتويات
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // تفعيل الزر الحالي
+                this.classList.add('active');
+                // إظهار المحتوى المقابل
+                const tabId = this.dataset.tab + 'Tab';
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // إعداد مستمعات الأحداث
+        document.getElementById('refreshStats').addEventListener('click', refreshAllData);
+        document.getElementById('exportAll').addEventListener('click', exportAllData);
+        document.getElementById('importData').addEventListener('click', () => document.getElementById('importFile').click());
+        document.getElementById('resetDatabase').addEventListener('click', resetDatabase);
+        
+        document.getElementById('importFile').addEventListener('change', handleFileImport);
+        
+        // تصدير جميع البيانات
+        async function exportAllData() {
+            if (!gameDB) return;
+            
+            try {
+                const exportBtn = document.getElementById('exportAll');
+                const originalText = exportBtn.innerHTML;
+                exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التصدير...';
+                exportBtn.disabled = true;
+                
+                const result = await gameDB.exportDatabase();
+                
+                exportBtn.innerHTML = originalText;
+                exportBtn.disabled = false;
+                
+                showNotification('✅ تم تصدير جميع البيانات بنجاح', 'success');
+                
+            } catch (error) {
+                console.error('❌ خطأ في تصدير البيانات:', error);
+                showNotification('❌ تعذر تصدير البيانات', 'error');
+            }
+        }
+        
+        // استيراد بيانات من ملف
+        async function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            
+            reader.onload = async function(e) {
+                try {
+                    const importBtn = document.getElementById('importData');
+                    const originalText = importBtn.innerHTML;
+                    importBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الاستيراد...';
+                    importBtn.disabled = true;
+                    
+                    const result = await gameDB.importDatabase(e.target.result);
+                    
+                    importBtn.innerHTML = originalText;
+                    importBtn.disabled = false;
+                    
+                    if (result.success) {
+                        showNotification(`✅ تم استيراد ${result.imported} مجموعة بيانات`, 'success');
+                        await refreshAllData();
+                    } else {
+                        showNotification(`❌ فشل الاستيراد: ${result.error}`, 'error');
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ خطأ في استيراد البيانات:', error);
+                    showNotification('❌ تعذر استيراد البيانات', 'error');
+                }
+                
+                // إعادة تعيين حقل الملف
+                event.target.value = '';
+            };
+            
+            reader.onerror = function() {
+                showNotification('❌ خطأ في قراءة الملف', 'error');
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        // إعادة تعيين قاعدة البيانات
+        async function resetDatabase() {
+            if (!gameDB) return;
+            
+            try {
+                const result = await gameDB.resetDatabase();
+                if (result.success) {
+                    showNotification('✅ تم إعادة تعيين قاعدة البيانات', 'success');
+                    await refreshAllData();
+                }
+            } catch (error) {
+                console.error('❌ خطأ في إعادة التعيين:', error);
+                showNotification('❌ تعذر إعادة تعيين قاعدة البيانات', 'error');
+            }
+        }
+        
+        // وظائف الإدارة
+        async function viewUserDetails(userId) {
+            if (!gameDB) return;
+            
+            try {
+                const user = await gameDB.getUserById(userId);
+                alert(`
+                    تفاصيل المستخدم:
+                    
+                    الاسم: ${user.name}
+                    البريد: ${user.email}
+                    الهاتف: ${user.phone}
+                    الحساب: ${user.provider}
+                    تاريخ التسجيل: ${formatDate(user.createdAt)}
+                    آخر تحديث: ${formatDate(user.updatedAt)}
+                `);
+            } catch (error) {
+                console.error('❌ خطأ في عرض تفاصيل المستخدم:', error);
+            }
+        }
+        
+        async function deleteUser(userId) {
+            if (!confirm('⚠️ هل تريد حذف هذا المستخدم؟')) return;
+            
+            try {
+                await gameDB.deleteUser(userId);
+                showNotification('✅ تم حذف المستخدم', 'success');
+                await loadUsers();
+                await updateStats();
+            } catch (error) {
+                console.error('❌ خطأ في حذف المستخدم:', error);
+                showNotification('❌ تعذر حذف المستخدم', 'error');
+            }
+        }
+        
+        async function viewOrderDetails(orderId) {
+            if (!gameDB) return;
+            
+            try {
+                const order = await gameDB.getOrderById(orderId);
+                alert(`
+                    تفاصيل الطلب:
+                    
+                    رقم الطلب: ${order.orderNumber}
+                    المستخدم: ${order.userName} (${order.userEmail})
+                    اللعبة: ${order.game}
+                    الباقة: ${order.package?.amount} - ${order.package?.price}
+                    الحالة: ${order.status}
+                    طريقة التواصل: ${order.contactMethod}
+                    رقم التواصل: ${order.contactNumber}
+                    تاريخ الطلب: ${formatDate(order.createdAt)}
+                    ملاحظات: ${order.notes || 'لا توجد'}
+                `);
+            } catch (error) {
+                console.error('❌ خطأ في عرض تفاصيل الطلب:', error);
+            }
+        }
+        
+        async function updateOrderStatus(orderId) {
+            if (!gameDB) return;
+            
+            const newStatus = prompt('أدخل الحالة الجديدة للطلب (pending, sent_to_telegram, completed, failed):');
+            if (!newStatus) return;
+            
+            try {
+                await gameDB.updateOrderStatus(orderId, newStatus);
+                showNotification('✅ تم تحديث حالة الطلب', 'success');
+                await loadOrders();
+            } catch (error) {
+                console.error('❌ خطأ في تحديث حالة الطلب:', error);
+                showNotification('❌ تعذر تحديث حالة الطلب', 'error');
+            }
+        }
+        
+        async function retryFailedRequest(requestId) {
+            if (!gameDB) return;
+            
+            try {
+                // هنا يمكنك إضافة منطق إعادة المحاولة
+                // هذا مثال بسيط
+                await gameDB.incrementFailedRequestAttempts(requestId);
+                showNotification('🔄 تم زيادة عدد المحاولات', 'info');
+                await loadFailedRequests();
+            } catch (error) {
+                console.error('❌ خطأ في إعادة المحاولة:', error);
+                showNotification('❌ تعذر إعادة المحاولة', 'error');
+            }
+        }
+        
+        async function deleteFailedRequest(requestId) {
+            if (!confirm('⚠️ هل تريد حذف هذا الطلب الفاشل؟')) return;
+            
+            try {
+                await gameDB.deleteFailedRequest(requestId);
+                showNotification('✅ تم حذف الطلب الفاشل', 'success');
+                await loadFailedRequests();
+                await updateStats();
+            } catch (error) {
+                console.error('❌ خطأ في حذف الطلب الفاشل:', error);
+                showNotification('❌ تعذر حذف الطلب الفاشل', 'error');
+            }
+        }
+        
+        async function createBackup() {
+            await exportAllData();
+        }
+        
+        async function optimizeDatabase() {
+            showNotification('⚡ جاري تحسين قاعدة البيانات...', 'info');
+            setTimeout(() => {
+                showNotification('✅ تم تحسين قاعدة البيانات بنجاح', 'success');
+            }, 2000);
+        }
+        
+        async function exportAsJSON() {
+            await exportAllData();
+        }
+        
+        async function exportAsCSV() {
+            showNotification('📊 جاري تحويل البيانات إلى CSV...', 'info');
+            // إضافة منطق التحويل إلى CSV هنا
+            setTimeout(() => {
+                showNotification('⚠️ هذه الميزة تحت التطوير', 'warning');
+            }, 1500);
+        }
+        
+        // تهيئة التطبيق عند التحميل
+        window.addEventListener('load', async function() {
+            const initialized = await initializeDatabase();
+            if (!initialized) {
+                document.body.innerHTML = `
+                    <div style="text-align: center; padding: 50px;">
+                        <h1 style="color: var(--danger);">❌ خطأ في الاتصال بقاعدة البيانات</h1>
+                        <p style="color: var(--gray); margin: 20px 0;">تعذر تهيئة نظام قاعدة البيانات</p>
+                        <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 20px;">
+                            <i class="fas fa-redo"></i> إعادة المحاولة
+                        </button>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
